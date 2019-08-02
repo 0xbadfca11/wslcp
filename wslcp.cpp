@@ -4,6 +4,8 @@
 #define WIN32_LEAN_AND_MEAN
 #define STRICT_GS_ENABLED
 #define _ATL_NO_AUTOMATIC_NAMESPACE
+#define _ATL_NO_DEFAULT_LIBS
+#define _ATL_NO_WIN_SUPPORT
 #define _CRTDBG_MAP_ALLOC
 #include <windows.h>
 #include <atlbase.h>
@@ -19,6 +21,7 @@
 #include <memory>
 #include <crtdbg.h>
 #pragma comment(lib, "pathcch")
+#pragma comment(lib, "shlwapi")
 #pragma comment(lib, "virtdisk")
 
 [[noreturn]]
