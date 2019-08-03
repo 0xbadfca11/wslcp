@@ -141,12 +141,6 @@ struct WSLCheckPoint
 				}
 			}
 		}
-		ULONG version;
-		distribution_key.QueryDWORDValue(L"Version", version);
-		if (version != 2)
-		{
-			die(L"The distribution is not WSL2.");
-		}
 		WCHAR base_path[MAX_PATH];
 		ULONG path_value_length = ARRAYSIZE(base_path);
 		result = distribution_key.QueryStringValue(L"BasePath", base_path, &path_value_length);
@@ -155,6 +149,10 @@ struct WSLCheckPoint
 			die(result);
 		}
 		ATLENSURE_SUCCEEDED(PathCchCombine(target_vhdx, ARRAYSIZE(target_vhdx), base_path, L"ext4.vhdx"));
+		if (!PathFileExistsW(target_vhdx))
+		{
+			die(L"The distribution is not WSL2.");
+		}
 		ATL::AtlCrtErrorCheck(wcscpy_s(parent_vhdx, target_vhdx));
 		ATLENSURE_SUCCEEDED(PathCchRenameExtension(parent_vhdx, ARRAYSIZE(target_vhdx), L"avhdx"));
 	}
