@@ -192,8 +192,7 @@ struct WSLCheckPoint
 			{
 				die(L"Checkpoint already exists.");
 			}
-#if 1
-			ATL::CHandle f(CreateFileW(target_vhdx, GENERIC_READ | GENERIC_WRITE | WRITE_DAC, 0, nullptr, OPEN_EXISTING, 0, nullptr));
+			ATL::CHandle f(CreateFileW(target_vhdx, DELETE | READ_CONTROL | WRITE_DAC, 0, nullptr, OPEN_EXISTING, 0, nullptr));
 			if (f == INVALID_HANDLE_VALUE)
 			{
 				f.Detach();
@@ -221,11 +220,11 @@ struct WSLCheckPoint
 			{
 				die(result);
 			}
-			EXPLICIT_ACCESS explicit_access = {
-				GENERIC_READ | GENERIC_WRITE,
+			EXPLICIT_ACCESS_W explicit_access = {
+				GENERIC_READ,
 				SET_ACCESS,
 				NO_INHERITANCE,
-				{ nullptr, NO_MULTIPLE_TRUSTEE, TRUSTEE_IS_SID, TRUSTEE_IS_UNKNOWN, (PWSTR)sid }
+				{ nullptr, NO_MULTIPLE_TRUSTEE, TRUSTEE_IS_SID, TRUSTEE_IS_WELL_KNOWN_GROUP, (PWSTR)sid }
 			};
 			result = SetEntriesInAclW(1, &explicit_access, dacl, &dacl);
 			if (result != ERROR_SUCCESS)
@@ -248,9 +247,16 @@ struct WSLCheckPoint
 			LocalFree(sid);
 			LocalFree(security_descriptor);
 			LocalFree(dacl);
-			f.Close();
-#endif
-			if (!MoveFileW(target_vhdx, parent_vhdx))
+			union
+			{
+				FILE_RENAME_INFO file_rename_info;
+				BYTE buffer[offsetof(FILE_RENAME_INFO, FileName[MAX_PATH])];
+			};
+			file_rename_info.ReplaceIfExists = FALSE;
+			file_rename_info.RootDirectory = nullptr;
+			file_rename_info.FileNameLength = (ULONG)wcslen(parent_vhdx) * sizeof(WCHAR);
+			ATL::Checked::wcscpy_s(file_rename_info.FileName, MAX_PATH, parent_vhdx);
+			if (!SetFileInformationByHandle(f, FileRenameInfo, &buffer, sizeof buffer))
 			{
 				die();
 			}
