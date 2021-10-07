@@ -7,6 +7,8 @@
 #define _ATL_NO_DEFAULT_LIBS
 #define _ATL_NO_WIN_SUPPORT
 #define _CRTDBG_MAP_ALLOC
+#pragma warning(suppress: 4117)
+#define _CRT_USE_BUILTIN_OFFSETOF
 #include <windows.h>
 #include <atlbase.h>
 #include <atlchecked.h>
@@ -388,7 +390,7 @@ int wmain(int argc, PWSTR argv[])
 	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG | _CRTDBG_MODE_FILE);
 	setlocale(LC_ALL, "");
 
-	ATLENSURE_SUCCEEDED(CoInitialize(nullptr));
+	ATLENSURE_SUCCEEDED(CoInitializeEx(nullptr, COINIT_MULTITHREADED | COINIT_DISABLE_OLE1DDE));
 	ATL::CComPtr<ITaskbarList3> TaskbarList;
 	ATLENSURE_SUCCEEDED(TaskbarList.CoCreateInstance(CLSID_TaskbarList));
 	TaskbarList->SetProgressState(GetConsoleWindow(), TBPF_NOPROGRESS);
